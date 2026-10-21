@@ -3,8 +3,17 @@
 #include <dt-bindings/zmk/bt.h>
 
 / {
+    macros {
+        // BT_CLR 호출을 위한 1인자 매크로
+        bt_clr_macro: bt_clr_macro {
+            compatible = "zmk,behavior-macro-one-param";
+            #binding-cells = <1>;
+            bindings = <&bt BT_CLR>;
+        };
+    };
+
     behaviors {
-        // 노브 스위치: 1초(1000ms) 홀드 -> 레이어 순환 / 짧게 탭 -> 일반 키 입력
+        // 노브 스위치: 1초(1000ms) 홀드 -> 다음 레이어로 순환 전환 / 살짝 탭 -> 키 입력
         ht_to: hold_tap_to {
             compatible = "zmk,behavior-hold-tap";
             label = "HT_TO";
@@ -13,61 +22,71 @@
             tapping-term-ms = <1000>;
             bindings = <&to>, <&kp>;
         };
+
+        // 6번 키 전용: 3초(3000ms) 홀드 -> 블루투스 페어링 초기화 / 살짝 탭 -> F18 입력
+        ht_bt: hold_tap_bt {
+            compatible = "zmk,behavior-hold-tap";
+            label = "HT_BT";
+            #binding-cells = <2>;
+            flavor = "hold-preferred";
+            tapping-term-ms = <3000>;
+            bindings = <&bt_clr_macro>, <&kp>;
+        };
     };
 
     keymap {
         compatible = "zmk,keymap";
 
         // ==========================================
-        // [레이어 0] Layer 1 (LED 1 점등)
+        // [기본 부팅 대기] 레이어 4 - 미디어 모드 (LED 4 점등)
         // ==========================================
-        layer_0 {
-            sensor-bindings = <&inc_dec_kp C_VOL_UP C_VOL_DN>;
+        layer_4 {
+            sensor-bindings = <&inc_dec_kp C_VOL_DN C_VOL_UP>; // 볼륨
             bindings = <
                 &kp F13    &kp F14    &kp F15
-                &kp F16    &kp F17    &kp F18
+                &kp F16    &kp F17    &ht_bt 0 F18
                 &tog 4     &ht_to 1 C_PP
             >;
         };
 
         // ==========================================
-        // [레이어 1] Layer 2 (LED 2 점등)
+        // [레이어 1] (LED 1 점등)
         // ==========================================
         layer_1 {
             sensor-bindings = <&inc_dec_kp N2 N3>;
             bindings = <
                 &kp F13    &kp F14    &kp F15
-                &kp F16    &kp F17    &kp F18
+                &kp F16    &kp F17    &ht_bt 0 F18
                 &tog 4     &ht_to 2 N1
             >;
         };
 
         // ==========================================
-        // [레이어 2] Layer 3 (LED 3 점등)
+        // [레이어 2] (LED 2 점등)
         // ==========================================
         layer_2 {
             sensor-bindings = <&inc_dec_kp N2 N3>;
             bindings = <
                 &kp F13    &kp F14    &kp F15
-                &kp F16    &kp F17    &kp F18
+                &kp F16    &kp F17    &ht_bt 0 F18
                 &tog 4     &ht_to 3 N1
             >;
         };
 
         // ==========================================
-        // [레이어 3] Layer 4 (LED 4 점등)
+        // [레이어 3] (LED 3 점등)
         // ==========================================
         layer_3 {
             sensor-bindings = <&inc_dec_kp N2 N3>;
             bindings = <
                 &kp F13    &kp F14    &kp F15
-                &kp F16    &kp F17    &kp F18
+                &kp F16    &kp F17    &ht_bt 0 F18
                 &tog 4     &ht_to 0 N1
             >;
         };
 
         // ==========================================
-        // [레이어 4] 키 잠금 / 전원 Off 모드 (모든 LED 소등)
+        // [잠금 레이어] 키 잠금 / 전원 Off 모드 (모든 LED 소등)
         // ==========================================
         lock_layer {
             sensor-bindings = <&inc_dec_kp 0 0>;
