@@ -9,11 +9,11 @@
 #define LOCK_LAYER 4
 
 static const struct gpio_dt_spec leds[] = {
-    GPIO_DT_SPEC_GET(DT_ALIAS(led0), gpios),
-    GPIO_DT_SPEC_GET(DT_ALIAS(led1), gpios),
-    GPIO_DT_SPEC_GET(DT_ALIAS(led2), gpios),
-    GPIO_DT_SPEC_GET(DT_ALIAS(led3), gpios),
-    GPIO_DT_SPEC_GET(DT_ALIAS(led4), gpios),
+    GPIO_DT_SPEC_GET(DT_ALIAS(led0), gpios), // LED 1 (P0.10)
+    GPIO_DT_SPEC_GET(DT_ALIAS(led1), gpios), // LED 2 (P1.11)
+    GPIO_DT_SPEC_GET(DT_ALIAS(led2), gpios), // LED 3 (P1.13)
+    GPIO_DT_SPEC_GET(DT_ALIAS(led3), gpios), // LED 4 (P1.15)
+    GPIO_DT_SPEC_GET(DT_ALIAS(led4), gpios), // LED 5 (P0.09) - BT 페어링 점멸
 };
 
 static struct k_work_delayable bt_blink_work;
@@ -23,26 +23,41 @@ static bool bt_led_state = false;
 static void update_layer_led(void) {
     uint8_t layer = zmk_keymap_highest_layer_active();
 
-    // 1~4번 레이어 LED 제어
+    // 1~4번 레이어 LED 전체 소등
     for (int i = 0; i < 4; i++) {
         if (device_is_ready(leds[i].port)) {
-            if (layer == LOCK_LAYER) {
-                // 키 7번 잠금 상태: 모든 레이어 LED 소등
-                gpio_pin_set_dt(&leds[i], 0);
-            } else {
-                // 현재 활성화된 레이어 번호의 LED만 점등
-                gpio_pin_set_dt(&leds[i], (i == layer) ? 1 : 0);
-            }
+            gpio_pin_set_dt(&leds[i], 0);
         }
     }
 
-    // 잠금 상태일 때는 5번 LED(블루투스 표시)도 강제 소등
-    if (layer == LOCK_LAYER && device_is_ready(leds[4].port)) {
-        gpio_pin_set_dt(&leds[4], 0);
+    // 잠금 상태 (키 7번 On)일 때는 5번 LED 포함 전체 소등 유지
+    if (layer == LOCK_LAYER) {
+        if (device_is_ready(leds[4].port)) {
+            gpio_pin_set_dt(&leds[4], 0);
+        }
+        return;
+    }
+
+    // 레이어 인덱스별 점등 매핑:
+    // Index 0 (레이어 4 - 부팅 기본값) -> LED 4 (leds[3])
+    // Index 1 (레이어 1)               -> LED 1 (leds[0])
+    // Index 2 (레이어 2)               -> LED 2 (leds[1])
+    // Index 3 (레이어 3)               -> LED 3 (leds[2])
+    int target_led_idx = -1;
+    switch (layer) {
+        case 0: target_led_idx = 3; break; // 레이어 4 -> LED 4
+        case 1: target_led_idx = 0; break; // 레이어 1 -> LED 1
+        case 2: target_led_idx = 1; break; // 레이어 2 -> LED 2
+        case 3: target_led_idx = 2; break; // 레이어 3 -> LED 3
+        default: break;
+    }
+
+    if (target_led_idx >= 0 && device_is_ready(leds[target_led_idx].port)) {
+        gpio_pin_set_dt(&leds[target_led_idx], 1);
     }
 }
 
-// 블루투스 페어링 대기(미연결) 시 1초 간격 점멸 처리
+// 블루투스 미연결/페어링 대기 시 1초 간격 점멸 핸들러
 static void bt_blink_handler(struct k_work *work) {
     if (is_connected) {
         if (device_is_ready(leds[4].port)) {
