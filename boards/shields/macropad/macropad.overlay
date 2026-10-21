@@ -1,0 +1,72 @@
+#include <dt-bindings/gpio/gpio.h>
+
+/ {
+    chosen {
+        zmk,kscan = &kscan0;
+    };
+
+    // 스위치 1~7번 및 노브 클릭 스위치 (총 8개 다이렉트 핀)
+    kscan0: kscan_0 {
+        compatible = "zmk,kscan-gpio-direct";
+        label = "KSCAN";
+        input-gpios
+            = <&gpio1 4  (GPIO_ACTIVE_LOW | GPIO_PULL_UP)> // 1번 키 (P1.04)
+            , <&gpio0 11 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)> // 2번 키 (P0.11)
+            , <&gpio1 0  (GPIO_ACTIVE_LOW | GPIO_PULL_UP)> // 3번 키 (P1.00)
+            , <&gpio1 6  (GPIO_ACTIVE_LOW | GPIO_PULL_UP)> // 4번 키 (P1.06)
+            , <&gpio0 24 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)> // 5번 키 (P0.24)
+            , <&gpio0 22 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)> // 6번 키 (P0.22)
+            , <&gpio0 17 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)> // 7번 키 (P0.17) - 전원 잠금 토글
+            , <&gpio0 20 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)> // 노브 클릭 (P0.20)
+            ;
+    };
+
+    // 로터리 엔코더
+    encoder: encoder {
+        compatible = "alps,ec11";
+        label = "ENCODER";
+        a-gpios = <&gpio0 8 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>; // P0.08
+        b-gpios = <&gpio0 6 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>; // P0.06
+        steps = <80>;
+        status = "okay";
+    };
+
+    sensors: sensors {
+        compatible = "zmk,keymap-sensors";
+        sensors = <&encoder>;
+        triggers-per-rotation = <20>;
+    };
+
+    // LED 5개 핀 정의
+    gpio_leds {
+        compatible = "gpio-leds";
+        led_0: led_0 {
+            gpios = <&gpio0 10 GPIO_ACTIVE_HIGH>; // LED 1번 (P0.10) - 레이어 1
+            label = "Layer 1 LED";
+        };
+        led_1: led_1 {
+            gpios = <&gpio1 11 GPIO_ACTIVE_HIGH>; // LED 2번 (P1.11) - 레이어 2
+            label = "Layer 2 LED";
+        };
+        led_2: led_2 {
+            gpios = <&gpio1 13 GPIO_ACTIVE_HIGH>; // LED 3번 (P1.13) - 레이어 3
+            label = "Layer 3 LED";
+        };
+        led_3: led_3 {
+            gpios = <&gpio1 15 GPIO_ACTIVE_HIGH>; // LED 4번 (P1.15) - 레이어 4
+            label = "Layer 4 LED";
+        };
+        led_4: led_4 {
+            gpios = <&gpio0 9  GPIO_ACTIVE_HIGH>; // LED 5번 (P0.09) - BT 페어링 점멸
+            label = "BT Pairing LED";
+        };
+    };
+
+    aliases {
+        led0 = &led_0;
+        led1 = &led_1;
+        led2 = &led_2;
+        led3 = &led_3;
+        led4 = &led_4;
+    };
+};
