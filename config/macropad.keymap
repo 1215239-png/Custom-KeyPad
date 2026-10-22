@@ -53,11 +53,11 @@
         // [레이어 1] (LED 1 점등) 
         // ==========================================
         layer_1 {
-            sensor-bindings = <&inc_dec_kp N2 N3>;
+            sensor-bindings = <&inc_dec_kp RBKT LBKT>;
             bindings = <
                 &kp F13    &kp F14    &kp F15
                 &kp F16    &kp F17    &kp F18
-                &ht_lock_bt 0 4       &ht_to 2 N1
+                &ht_lock_bt 0 4       &ht_to 2 LG(Z)
             >;
         };
 
@@ -65,11 +65,11 @@
         // [레이어 2] (LED 2 점등) 
         // ==========================================
         layer_2 {
-            sensor-bindings = <&inc_dec_kp N5 N6>;
+            sensor-bindings = <&inc_dec_kp LG(EQUAL) LG(MINUS)>;
             bindings = <
                 &kp F13    &kp F14    &kp F15
                 &kp F16    &kp F17    &kp F18
-                &ht_lock_bt 0 4       &ht_to 3 N4
+                &ht_lock_bt 0 4       &ht_to 3 LG(Z)
             >;
         };
 
@@ -77,11 +77,11 @@
         // [레이어 3] (LED 3 점등) 
         // ==========================================
         layer_3 {
-            sensor-bindings = <&inc_dec_kp N8 N9>;
+            sensor-bindings = <&inc_dec_kp RIGHT LEFT>;
             bindings = <
                 &kp F13    &kp F14    &kp F15
                 &kp F16    &kp F17    &kp F18
-                &ht_lock_bt 0 4       &ht_to 0 N7
+                &ht_lock_bt 0 4       &ht_to 0 SPACE
             >;
         };
 
